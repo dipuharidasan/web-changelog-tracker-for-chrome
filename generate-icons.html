@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate Extension Icons</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .icon-canvas { margin-bottom: 20px; border: 1px solid #ccc; }
+    button { padding: 10px; margin: 5px; cursor: pointer; }
+    .instructions { margin: 20px 0; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <h1>Chrome Extension Icon Generator</h1>
+  
+  <div class="instructions">
+    <p>This tool helps you create icons for your Chrome extension:</p>
+    <ol>
+      <li>Each canvas below represents an icon size needed for your extension</li>
+      <li>Click "Draw" buttons to fill each canvas with a blue square (placeholder icon)</li>
+      <li>Click "Download" buttons to save each icon</li>
+      <li>Move the downloaded PNG files to your extension's "icons" folder</li>
+    </ol>
+  </div>
+
+  <h2>16x16 Icon</h2>
+  <canvas id="canvas16" class="icon-canvas" width="16" height="16"></canvas><br>
+  <button onclick="drawIcon(16)">Draw 16x16 Icon</button>
+  <button onclick="downloadIcon(16)">Download 16x16 Icon</button>
+  
+  <h2>48x48 Icon</h2>
+  <canvas id="canvas48" class="icon-canvas" width="48" height="48"></canvas><br>
+  <button onclick="drawIcon(48)">Draw 48x48 Icon</button>
+  <button onclick="downloadIcon(48)">Download 48x48 Icon</button>
+  
+  <h2>128x128 Icon</h2>
+  <canvas id="canvas128" class="icon-canvas" width="128" height="128"></canvas><br>
+  <button onclick="drawIcon(128)">Draw 128x128 Icon</button>
+  <button onclick="downloadIcon(128)">Download 128x128 Icon</button>
+
+  <script>
+    function drawIcon(size) {
+      const canvas = document.getElementById(`canvas${size}`);
+      const ctx = canvas.getContext('2d');
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, size, size);
+      
+      // Draw blue background
+      ctx.fillStyle = '#4285F4'; // Google blue color
+      ctx.fillRect(0, 0, size, size);
+      
+      // Draw a simple "G" letter in white (for GitHub)
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${size/2}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('G', size/2, size/2);
+    }
+    
+    function downloadIcon(size) {
+      const canvas = document.getElementById(`canvas${size}`);
+      const link = document.createElement('a');
+      link.download = `icon${size}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  </script>
+</body>
+</html>
