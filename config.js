@@ -20,8 +20,8 @@ const CONFIG = {
   // CSS selectors for parsing the webpage
   SELECTORS: {
     POST: 'article',
-    TITLE: 'h2',
-    LINK: 'a',
+    TITLE: 'a[class*="ChangelogItem-title"]',
+    LINK: 'a[class*="ChangelogItem-title"]',
     DATE: 'time'
   },
   

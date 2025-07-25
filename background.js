@@ -89,31 +89,33 @@ async function checkForUpdates() {
 // Extract posts using regex instead of DOMParser (service worker compatible)
 function extractPostsWithRegex(html) {
   const posts = [];
-  const postRegex = new RegExp(`<${CONFIG.SELECTORS.POST}[^>]*>([\\\s\\\S]*?)<\/${CONFIG.SELECTORS.POST}>`, 'g');
-  const titleRegex = new RegExp(`<${CONFIG.SELECTORS.TITLE}[^>]*>([\\\s\\\S]*?)<\/${CONFIG.SELECTORS.TITLE}>`);
-  const linkRegex = new RegExp(`<${CONFIG.SELECTORS.LINK}[^>]*href="([^"]*)"[^>]*>`);
-  const dateRegex = new RegExp(`<${CONFIG.SELECTORS.DATE}[^>]*datetime="([^"]*)"[^>]*>`);
+  
+  // Find all ChangelogItem-title links directly in the HTML
+  // Pattern: href comes before class in the HTML structure
+  const titleLinkRegex = /<a[^>]*href="([^"]*)"[^>]*class="ChangelogItem-title"[^>]*>([\s\S]*?)<\/a>/g;
   
   let match;
-  while ((match = postRegex.exec(html)) !== null) {
-    const postHtml = match[1];
+  while ((match = titleLinkRegex.exec(html)) !== null) {
+    const url = match[1];
+    const rawTitle = match[2];
     
-    const titleMatch = titleRegex.exec(postHtml);
-    const linkMatch = linkRegex.exec(postHtml);
-    const dateMatch = dateRegex.exec(postHtml);
+    // Clean up the title by removing HTML tags and normalizing whitespace
+    const title = rawTitle.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
     
-    if (titleMatch && linkMatch) {
-      const title = titleMatch[1].replace(/<[^>]*>/g, '').trim(); // Strip HTML tags
-      const url = linkMatch[1].startsWith('http') ? linkMatch[1] : new URL(linkMatch[1], CONFIG.CHANGELOG_URL).toString();
-      const date = dateMatch ? dateMatch[1] : new Date().toISOString();
-      
+    if (title && url) {
       // Generate a unique ID from the URL
       const id = url.split('/').slice(-3).join('-');
+      
+      // Try to find the date for this specific post by looking in the surrounding context
+      // We'll look backwards from the current match to find the datetime attribute
+      const beforeMatch = html.substring(Math.max(0, match.index - 1000), match.index);
+      const dateMatch = beforeMatch.match(/datetime="([^"]*)"[^>]*>[^<]*<\/time>/);
+      const date = dateMatch ? dateMatch[1] : new Date().toISOString();
       
       posts.push({
         id,
         title,
-        url,
+        url: url.startsWith('http') ? url : new URL(url, CONFIG.CHANGELOG_URL).toString(),
         date,
         read: false
       });
